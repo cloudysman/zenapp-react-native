@@ -1,0 +1,8 @@
+*.zip
+*.apk
+node_modules/
+android/build/
+android/.gradle/
+android/app/build/
+__pycache__/
+*.pyc
