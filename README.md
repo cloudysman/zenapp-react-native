@@ -1,857 +1,213 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-  ActivityIndicator,
-  NativeModules,
-  Animated,
-  Dimensions,
-  Vibration,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import LinearGradient from 'react-native-linear-gradient';
-import UsageStats from './UsageStats';
-import GoalSettings from './GoalSettings';
-import SmartInterventions from './SmartInterventions';
-import DigitalSkillsViewer from './DigitalSkillsViewer';
-import DailyTipWidget from './DailyTipWidget';
-import { digitalSkillsContent } from './DigitalSkillsContent';
+# ZenApp - Digital Wellness Assistant 📱
 
-const { UsageStatsModule } = NativeModules;
-const { width, height } = Dimensions.get('window');
+AI-powered mobile app helping users manage smartphone usage. Features usage tracking, daily goals, smart notifications, and Zen AI chatbot for digital wellness guidance.
 
-// Component riêng cho Message Item
-const MessageItem = ({ message }) => {
-  const messageAnim = useRef(new Animated.Value(0)).current;
+## 🌟 Features
 
-  useEffect(() => {
-    Animated.spring(messageAnim, {
-      toValue: 1,
-      tension: 50,
-      friction: 8,
-      useNativeDriver: true,
-    }).start();
-  }, []);
+- **📊 Usage Tracking**: Monitor daily phone usage time
+- **🎯 Daily Goals**: Set and track screen time limits
+- **🔔 Smart Notifications**: Receive timely reminders at 80%, 90%, and 100% of goal
+- **🤖 AI Chatbot**: Chat with Zen AI for personalized digital wellness tips
+- **💡 Daily Tips**: Get daily tips for healthier tech habits
+- **📚 Digital Skills Library**: Browse categorized tips for focus, sleep, mindfulness, etc.
 
-  return (
-    <Animated.View
-      style={[
-        styles.messageContainer,
-        message.isBot ? styles.botMessageContainer : styles.userMessageContainer,
-        {
-          opacity: messageAnim,
-          transform: [{
-            translateX: messageAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [message.isBot ? -30 : 30, 0],
-            }),
-          }],
-        },
-      ]}
-    >
-      <View style={[
-        styles.messageBubble,
-        message.isBot ? styles.botBubble : styles.userBubble
-      ]}>
-        <Text style={[
-          styles.messageText,
-          message.isBot ? styles.botText : styles.userText
-        ]}>
-          {message.text}
-        </Text>
-        <Text style={[
-          styles.timestamp,
-          message.isBot ? styles.botTimestamp : styles.userTimestamp
-        ]}>
-          {message.timestamp}
-        </Text>
-      </View>
-    </Animated.View>
-  );
-};
+## 🛠️ Tech Stack
 
-const ChatScreen = () => {
-  const [messages, setMessages] = useState([]);
-  const [inputText, setInputText] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [showUsageStats, setShowUsageStats] = useState(false);
-  const [showGoalSettings, setShowGoalSettings] = useState(false);
-  const [showSmartInterventions, setShowSmartInterventions] = useState(false);
-  const [showDigitalSkills, setShowDigitalSkills] = useState(false);
-  const [todayUsage, setTodayUsage] = useState(null);
-  const [dailyGoal, setDailyGoal] = useState(null);
-  const [lastNotificationTime, setLastNotificationTime] = useState({
-    warning80: null,
-    warning90: null,
-    exceeded: null,
-  });
-  const scrollViewRef = useRef();
+### Frontend
+- **React Native** 0.81.1
+- **React Native Linear Gradient** - Beautiful UI gradients
+- **AsyncStorage** - Local data persistence
+- **Native Modules** - Android usage stats integration
 
-  // Animation values
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
-  const buttonScale = useRef(new Animated.Value(1)).current;
-  const typingIndicatorAnim = useRef(new Animated.Value(0)).current;
+### Backend
+- **Python FastAPI** - REST API server
+- **Google Gemini AI** - Natural language processing
+- **Uvicorn** - ASGI server
 
-  const API_BASE_URL = 'http://10.24.194.184:8000';
+### Android Native
+- **Kotlin** - Native Android modules
+- **UsageStatsManager** - Phone usage tracking
+- **NotificationManager** - Smart notifications
 
-  useEffect(() => {
-    // Welcome animation
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        tension: 50,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-    ]).start();
+## 📋 Prerequisites
 
-    // Welcome message
-    const welcomeMessage = {
-      id: Date.now(),
-      text: 'Xin chào! 👋 Mình là Zen, trợ lý AI giúp bạn cân bằng cuộc sống số.\n\nBạn có thể chia sẻ với mình về thói quen sử dụng điện thoại hoặc hỏi mẹo để sử dụng công nghệ lành mạnh hơn nhé! 🌟',
-      isBot: true,
-      timestamp: new Date().toLocaleTimeString('vi-VN', {
-        hour: '2-digit',
-        minute: '2-digit'
-      }),
-    };
-    setMessages([welcomeMessage]);
+- Node.js 18+ 
+- Python 3.8+
+- Android Studio (latest version)
+- JDK 17
+- Android SDK (API 33+)
+- Android device/emulator (API 33+)
 
-    loadDailyGoal();
+## 🚀 Installation
 
-    const intervalId = setInterval(() => {
-      checkUsageAgainstGoal();
-    }, 60000);
+### 1. Clone the repository
+```bash
+git clone https://github.com/cloudysman/zenapp-react-native.git
+cd zenapp-react-native
+```
 
-    return () => clearInterval(intervalId);
-  }, []);
+### 2. Backend Setup
+```bash
+# Navigate to backend folder
+cd backend
 
-  const loadDailyGoal = async () => {
-    try {
-      const goalData = await AsyncStorage.getItem('@zen_app_daily_goal');
-      if (goalData) {
-        const goal = JSON.parse(goalData);
-        setDailyGoal(goal);
-      }
-    } catch (error) {
-      console.error('Error loading goal:', error);
-    }
-  };
+# Install Python dependencies
+pip install -r requirements.txt
 
-  const handleUsageUpdate = (usageData) => {
-    setTodayUsage(usageData);
-    if (dailyGoal) {
-      checkUsageWithGoal(usageData, dailyGoal);
-    }
-  };
+# Configure API key (edit main.py)
+# Replace GEMINI_API_KEY with your key from https://makersuite.google.com/app/apikey
+```
 
-  const checkUsageAgainstGoal = async () => {
-    if (!dailyGoal || !todayUsage) return;
-    await checkUsageWithGoal(todayUsage, dailyGoal);
-  };
+### 3. Frontend Setup
+```bash
+# Navigate to ZenApp folder
+cd ../ZenApp
 
-  const checkUsageWithGoal = async (usage, goal) => {
-    try {
-      const notifSettings = await AsyncStorage.getItem('@zen_app_notifications');
-      if (!notifSettings) return;
+# Install Node dependencies
+npm install
 
-      const settings = JSON.parse(notifSettings);
-      if (!settings.enabled) return;
+# For iOS (Mac only)
+cd ios && pod install && cd ..
+```
 
-      const usageMinutes = usage.totalMinutes;
-      const goalMinutes = goal.totalMinutes;
-      const percentage = (usageMinutes / goalMinutes) * 100;
+### 4. Environment Configuration
 
-      const now = Date.now();
-      const NOTIFICATION_COOLDOWN = 30 * 60 * 1000;
+#### Update API endpoints in `ChatScreen.js`:
+```javascript
+const API_BASE_URL = 'http://YOUR_IP_ADDRESS:8000';
+// Replace with your local IP (e.g., 192.168.1.100)
+```
 
-      if (percentage >= 100) {
-        if (!lastNotificationTime.exceeded ||
-            now - lastNotificationTime.exceeded > NOTIFICATION_COOLDOWN) {
-          await UsageStatsModule.showExceededNotification(
-            '⚠️ Đã vượt mục tiêu!',
-            `Bạn đã sử dụng điện thoại ${usage.hours}h ${usage.minutes}p, vượt quá mục tiêu ${goal.hours}h ${goal.minutes}p. Hãy nghỉ ngơi nhé! 🌿`
-          );
+## 🏃‍♂️ Running the App
 
-          setLastNotificationTime(prev => ({
-            ...prev,
-            exceeded: now
-          }));
+### 1. Start Backend Server
+```bash
+cd backend
+python main.py
+# Server runs at http://localhost:8000
+```
 
-          const warningMessage = {
-            id: Date.now(),
-            text: `⚠️ Bạn đã vượt quá mục tiêu sử dụng hôm nay! Đã dùng ${usage.hours}h ${usage.minutes}p / mục tiêu ${goal.hours}h ${goal.minutes}p. Hãy thử để điện thoại sang một bên và làm điều gì đó khác nhé! 💪`,
-            isBot: true,
-            timestamp: new Date().toLocaleTimeString('vi-VN', {
-              hour: '2-digit',
-              minute: '2-digit'
-            }),
-          };
-          setMessages(prev => [...prev, warningMessage]);
-        }
-      }
-      else if (percentage >= 90 && settings.warningAt90) {
-        if (!lastNotificationTime.warning90 ||
-            now - lastNotificationTime.warning90 > NOTIFICATION_COOLDOWN) {
-          await UsageStatsModule.showWarningNotification(
-            '⏰ Sắp đạt mục tiêu!',
-            `Bạn đã sử dụng ${Math.round(percentage)}% thời gian mục tiêu hôm nay (${usage.hours}h ${usage.minutes}p / ${goal.hours}h ${goal.minutes}p)`
-          );
+### 2. Start React Native Metro
+```bash
+cd ZenApp
+npx react-native start
+```
 
-          setLastNotificationTime(prev => ({
-            ...prev,
-            warning90: now
-          }));
-        }
-      }
-      else if (percentage >= 80 && settings.warningAt80) {
-        if (!lastNotificationTime.warning80 ||
-            now - lastNotificationTime.warning80 > NOTIFICATION_COOLDOWN) {
-          await UsageStatsModule.showWarningNotification(
-            '📱 Nhắc nhở thời gian',
-            `Bạn đã sử dụng ${Math.round(percentage)}% thời gian mục tiêu hôm nay (${usage.hours}h ${usage.minutes}p / ${goal.hours}h ${goal.minutes}p)`
-          );
+### 3. Run on Android
+```bash
+# New terminal
+npx react-native run-android
+```
 
-          setLastNotificationTime(prev => ({
-            ...prev,
-            warning80: now
-          }));
-        }
-      }
-    } catch (error) {
-      console.error('Error checking usage against goal:', error);
-    }
-  };
+### 4. Run on iOS (Mac only)
+```bash
+npx react-native run-ios
+```
 
-  const handleGoalUpdate = (newGoal) => {
-    setDailyGoal(newGoal);
-    if (todayUsage) {
-      checkUsageWithGoal(todayUsage, newGoal);
-    }
-  };
+## 📱 Android Permissions Setup
 
-  const getUsageStatusColor = () => {
-    if (!todayUsage || !dailyGoal) return '#E53E3E';
+The app requires special permissions on Android:
 
-    const percentage = (todayUsage.totalMinutes / dailyGoal.totalMinutes) * 100;
-    if (percentage >= 100) return '#DC2626'; // Deep Red
-    if (percentage >= 90) return '#EF4444'; // Red
-    if (percentage >= 80) return '#F59E0B'; // Orange
-    return '#10B981'; // Green
-  };
+1. **Usage Access Permission**
+   - Go to Settings → Apps → Special access → Usage access
+   - Enable for ZenApp
 
-  const getUsageStatusText = () => {
-    if (!todayUsage) return '📊';
-    if (!dailyGoal) return `${todayUsage.hours}h ${todayUsage.minutes}p`;
+2. **Notification Permission** (Android 13+)
+   - The app will request this automatically
 
-    const percentage = Math.round((todayUsage.totalMinutes / dailyGoal.totalMinutes) * 100);
-    return `${percentage}%`;
-  };
+## 🔧 Troubleshooting
 
-  const animateButtonPress = () => {
-    Animated.sequence([
-      Animated.timing(buttonScale, {
-        toValue: 0.95,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonScale, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    Vibration.vibrate(10);
-  };
+### Common Issues
 
-  const sendMessage = async () => {
-    if (!inputText.trim()) return;
+**1. Metro bundler error**
+```bash
+npx react-native start --reset-cache
+```
 
-    animateButtonPress();
+**2. Android build failed**
+```bash
+cd android
+./gradlew clean
+cd ..
+npx react-native run-android
+```
 
-    const userMessage = {
-      id: Date.now(),
-      text: inputText.trim(),
-      isBot: false,
-      timestamp: new Date().toLocaleTimeString('vi-VN', {
-        hour: '2-digit',
-        minute: '2-digit'
-      }),
-    };
+**3. "Network request failed" error**
+- Ensure backend server is running
+- Update API_BASE_URL with correct IP address
+- Check firewall settings
 
-    setMessages(prev => [...prev, userMessage]);
-    const currentInput = inputText.trim();
-    setInputText('');
-    setIsLoading(true);
+**4. Usage stats not showing**
+- Grant Usage Access permission in Android settings
+- Restart the app after granting permission
 
-    // Start typing animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(typingIndicatorAnim, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(typingIndicatorAnim, {
-          toValue: 0,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
+**5. Python backend not starting**
+- Check if port 8000 is already in use
+- Verify Gemini API key is valid
 
-    try {
-      if (currentInput.toLowerCase().includes('mục tiêu') ||
-          currentInput.toLowerCase().includes('đặt giới hạn') ||
-          currentInput.toLowerCase().includes('thời gian tối đa')) {
-        setShowGoalSettings(true);
+## 📁 Project Structure
 
-        const botMessage = {
-          id: Date.now() + 1,
-          text: 'Mình sẽ mở cài đặt mục tiêu cho bạn. Bạn có thể đặt thời gian sử dụng tối đa mỗi ngày và nhận thông báo nhắc nhở khi gần đạt mục tiêu! 📱⏰',
-          isBot: true,
-          timestamp: new Date().toLocaleTimeString('vi-VN', {
-            hour: '2-digit',
-            minute: '2-digit'
-          }),
-        };
-        setMessages(prev => [...prev, botMessage]);
-        setIsLoading(false);
-        typingIndicatorAnim.stopAnimation();
-        return;
-      }
+```
+zenapp-react-native/
+├── backend/
+│   ├── main.py              # FastAPI server
+│   └── requirements.txt     # Python dependencies
+├── ZenApp/
+│   ├── android/             # Android native code
+│   │   └── app/src/main/java/com/zenapp/
+│   │       ├── MainActivity.kt
+│   │       ├── UsageStatsModule.kt
+│   │       └── SmartInterventionService.kt
+│   ├── src/components/      # React Native components
+│   │   ├── ChatScreen.js    # Main chat interface
+│   │   ├── UsageStats.js    # Usage tracking display
+│   │   ├── GoalSettings.js  # Goal configuration
+│   │   └── DigitalSkillsViewer.js
+│   └── package.json
+└── README.md
+```
 
-      const relatedTip = digitalSkillsContent.getTipsByKeywords(currentInput);
-      const conversationHistory = messages.map(msg => ({
-        role: msg.isBot ? 'model' : 'user',
-        content: msg.text
-      }));
+## 🤝 Contributing
 
-      const contextMessage = relatedTip
-        ? `Context: User might benefit from this tip: "${relatedTip.title}: ${relatedTip.content}". Include this tip naturally in your response if relevant.`
-        : '';
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-      const response = await fetch(`${API_BASE_URL}/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: currentInput,
-          conversation_history: conversationHistory,
-          context: contextMessage,
-        }),
-      });
+## 📝 License
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+This project is open source and available under the MIT License.
 
-      const data = await response.json();
+## 👨‍💻 Author
 
-      const botMessage = {
-        id: Date.now() + 1,
-        text: data.response,
-        isBot: true,
-        timestamp: new Date().toLocaleTimeString('vi-VN', {
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
-      };
+**cloudysman**
+- GitHub: [@cloudysman](https://github.com/cloudysman)
 
-      setMessages(prev => [...prev, botMessage]);
+## 🙏 Acknowledgments
 
-      if (relatedTip) {
-        setTimeout(() => {
-          const tipMessage = {
-            id: Date.now() + 2,
-            text: `💡 Mẹo hữu ích: ${relatedTip.title}\n\n${relatedTip.content}\n\n📚 Xem thêm mẹo khác bằng cách nhấn vào biểu tượng 💡 ở trên!`,
-            isBot: true,
-            timestamp: new Date().toLocaleTimeString('vi-VN', {
-              hour: '2-digit',
-              minute: '2-digit'
-            }),
-          };
-          setMessages(prev => [...prev, tipMessage]);
-        }, 1500);
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      Alert.alert(
-        'Lỗi kết nối',
-        'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng và thử lại.',
-        [{ text: 'OK' }]
-      );
+- Google Gemini AI for natural language processing
+- React Native community
+- Digital wellness research papers and resources
 
-      const errorMessage = {
-        id: Date.now() + 1,
-        text: 'Xin lỗi, mình đang gặp sự cố kỹ thuật. Vui lòng thử lại sau nhé! 🙏',
-        isBot: true,
-        timestamp: new Date().toLocaleTimeString('vi-VN', {
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-      typingIndicatorAnim.stopAnimation();
-    }
-  };
+---
 
-  const scrollToBottom = () => {
-    scrollViewRef.current?.scrollToEnd({ animated: true });
-  };
+## 🇻🇳 Hướng dẫn Tiếng Việt
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+### Yêu cầu hệ thống
+- Cài đặt Node.js, Python, Android Studio
+- Thiết bị Android hoặc máy ảo
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={['#E53E3E', '#DC2626']}
-        start={{x: 0, y: 0}}
-        end={{x: 1, y: 1}}
-        style={styles.header}
-      >
-        <Animated.View
-          style={[
-            styles.headerContent,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <View style={styles.headerTop}>
-            <View style={styles.headerLeft}>
-              <Text style={styles.headerTitle}>Zen AI</Text>
-              <Text style={styles.headerSubtitle}>
-                {dailyGoal
-                  ? `Mục tiêu: ${dailyGoal.hours}h ${dailyGoal.minutes}p`
-                  : 'Trợ lý sống số thông minh'}
-              </Text>
-            </View>
+### Cài đặt nhanh
+1. Clone project về máy
+2. Cài dependencies: `npm install` (frontend) và `pip install -r requirements.txt` (backend)
+3. Sửa IP trong `ChatScreen.js` thành IP máy bạn
+4. Chạy backend: `python main.py`
+5. Chạy app: `npx react-native run-android`
 
-            <View style={styles.headerButtons}>
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => {
-                  animateButtonPress();
-                  setShowDigitalSkills(true);
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.iconButtonText}>💡</Text>
-              </TouchableOpacity>
+### Lưu ý quan trọng
+- Cấp quyền Usage Access cho app trong Settings Android
+- Backend phải chạy trước khi mở app
+- Dùng IP máy tính, không dùng localhost/127.0.0.1
 
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => {
-                  animateButtonPress();
-                  setShowSmartInterventions(true);
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.iconButtonText}>🤖</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => {
-                  animateButtonPress();
-                  setShowGoalSettings(true);
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.iconButtonText}>⚙️</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <TouchableOpacity
-            style={[styles.statsBar, { backgroundColor: getUsageStatusColor() + '20' }]}
-            onPress={() => {
-              animateButtonPress();
-              setShowUsageStats(!showUsageStats);
-            }}
-            activeOpacity={0.8}
-          >
-            <View style={styles.statsBarLeft}>
-              <Text style={styles.statsLabel}>Hôm nay</Text>
-              <Text style={[styles.statsValue, { color: getUsageStatusColor() }]}>
-                {todayUsage ? `${todayUsage.hours}h ${todayUsage.minutes}p` : '--:--'}
-              </Text>
-            </View>
-            <View style={[styles.statsPercentage, { backgroundColor: getUsageStatusColor() }]}>
-              <Text style={styles.statsPercentageText}>{getUsageStatusText()}</Text>
-            </View>
-          </TouchableOpacity>
-        </Animated.View>
-      </LinearGradient>
-
-      {showUsageStats && (
-        <Animated.View style={{ opacity: fadeAnim }}>
-          <UsageStats onUsageUpdate={handleUsageUpdate} />
-        </Animated.View>
-      )}
-
-      <DailyTipWidget onPress={() => setShowDigitalSkills(true)} />
-
-      <GoalSettings
-        visible={showGoalSettings}
-        onClose={() => setShowGoalSettings(false)}
-        onGoalUpdate={handleGoalUpdate}
-      />
-
-      <SmartInterventions
-        visible={showSmartInterventions}
-        onClose={() => setShowSmartInterventions(false)}
-      />
-
-      <DigitalSkillsViewer
-        visible={showDigitalSkills}
-        onClose={() => setShowDigitalSkills(false)}
-      />
-
-      <KeyboardAvoidingView
-        style={styles.chatContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.messagesContainer}
-          showsVerticalScrollIndicator={false}
-          onContentSizeChange={scrollToBottom}
-          contentContainerStyle={styles.messagesContent}
-        >
-          {messages.map(message => (
-            <MessageItem key={message.id} message={message} />
-          ))}
-          {isLoading && (
-            <Animated.View
-              style={[
-                styles.messageContainer,
-                styles.botMessageContainer,
-                {
-                  opacity: typingIndicatorAnim,
-                },
-              ]}
-            >
-              <View style={[styles.messageBubble, styles.botBubble, styles.typingBubble]}>
-                <View style={styles.typingIndicator}>
-                  <View style={[styles.typingDot, styles.typingDot1]} />
-                  <View style={[styles.typingDot, styles.typingDot2]} />
-                  <View style={[styles.typingDot, styles.typingDot3]} />
-                </View>
-                <Text style={[styles.messageText, styles.botText, styles.loadingText]}>
-                  Zen đang soạn tin...
-                </Text>
-              </View>
-            </Animated.View>
-          )}
-        </ScrollView>
-
-        <View style={styles.inputContainer}>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={styles.textInput}
-              value={inputText}
-              onChangeText={setInputText}
-              placeholder="Nhập tin nhắn..."
-              placeholderTextColor="#A0A0A0"
-              multiline
-              maxLength={500}
-              onSubmitEditing={sendMessage}
-              returnKeyType="send"
-            />
-            <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
-              <TouchableOpacity
-                style={[
-                  styles.sendButton,
-                  (!inputText.trim() || isLoading) && styles.sendButtonDisabled
-                ]}
-                onPress={sendMessage}
-                disabled={!inputText.trim() || isLoading}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.sendButtonText}>
-                  {isLoading ? '⏳' : '➤'}
-                </Text>
-              </TouchableOpacity>
-            </Animated.View>
-          </View>
-          <Text style={styles.inputHint}>Nhấn Enter để gửi</Text>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FAFAFA',
-  },
-  header: {
-    paddingTop: Platform.OS === 'ios' ? 0 : 10,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  headerContent: {
-    padding: 20,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  headerLeft: {
-    flex: 1,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: 'white',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.9)',
-    fontWeight: '400',
-  },
-  headerButtons: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  iconButton: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backdropFilter: 'blur(10px)',
-  },
-  iconButtonText: {
-    fontSize: 18,
-  },
-  statsBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 16,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-  },
-  statsBarLeft: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 8,
-  },
-  statsLabel: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.9)',
-    fontWeight: '500',
-  },
-  statsValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  statsPercentage: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    backgroundColor: 'white',
-  },
-  statsPercentageText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  chatContainer: {
-    flex: 1,
-  },
-  messagesContainer: {
-    flex: 1,
-  },
-  messagesContent: {
-    padding: 16,
-    paddingBottom: 20,
-  },
-  messageContainer: {
-    marginVertical: 6,
-  },
-  botMessageContainer: {
-    alignItems: 'flex-start',
-  },
-  userMessageContainer: {
-    alignItems: 'flex-end',
-  },
-  messageBubble: {
-    maxWidth: '75%',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 20,
-  },
-  botBubble: {
-    backgroundColor: 'white',
-    borderBottomLeftRadius: 6,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  userBubble: {
-    backgroundColor: '#E53E3E',
-    borderBottomRightRadius: 6,
-  },
-  messageText: {
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  botText: {
-    color: '#2D3748',
-  },
-  userText: {
-    color: 'white',
-  },
-  timestamp: {
-    fontSize: 11,
-    marginTop: 6,
-    opacity: 0.7,
-  },
-  botTimestamp: {
-    color: '#718096',
-  },
-  userTimestamp: {
-    color: 'rgba(255,255,255,0.8)',
-  },
-  typingBubble: {
-    minWidth: 100,
-  },
-  typingIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 4,
-  },
-  typingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#CBD5E0',
-  },
-  typingDot1: {
-    animationDelay: '0ms',
-  },
-  typingDot2: {
-    animationDelay: '200ms',
-  },
-  typingDot3: {
-    animationDelay: '400ms',
-  },
-  loadingText: {
-    fontStyle: 'italic',
-    color: '#718096',
-  },
-  inputContainer: {
-    backgroundColor: 'white',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 12,
-    borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 12,
-  },
-  textInput: {
-    flex: 1,
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    borderRadius: 24,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    fontSize: 15,
-    maxHeight: 100,
-    backgroundColor: '#F7FAFC',
-    color: '#2D3748',
-  },
-  sendButton: {
-    backgroundColor: '#E53E3E',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#E53E3E',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 5,
-  },
-  sendButtonDisabled: {
-    backgroundColor: '#CBD5E0',
-    shadowOpacity: 0,
-  },
-  sendButtonText: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  inputHint: {
-    fontSize: 11,
-    color: '#A0AEC0',
-    textAlign: 'center',
-    marginTop: 6,
-  },
-});
-
-export default ChatScreen;
+Nếu gặp lỗi, vui lòng tạo issue trên GitHub!
