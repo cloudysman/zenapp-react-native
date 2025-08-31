@@ -4,14 +4,14 @@ AI-powered mobile app helping users manage smartphone usage. Features usage trac
 
 ## 🌟 Features
 
-- **📊 Usage Tracking**: Monitor daily phone usage time
-- **🎯 Daily Goals**: Set and track screen time limits
-- **🔔 Smart Notifications**: Receive timely reminders at 80%, 90%, and 100% of goal
-- **🤖 AI Chatbot**: Chat with Zen AI for personalized digital wellness tips
-- **💡 Daily Tips**: Get daily tips for healthier tech habits
-- **📚 Digital Skills Library**: Browse categorized tips for focus, sleep, mindfulness, etc.
+- **📊 Usage tracking**: Monitor daily phone usage time
+- **🎯 Daily goals**: Set and track screen time limits
+- **🔔 Smart notifications**: Receive timely reminders at 80%, 90%, and 100% of goal
+- **🤖 AI chatbot**: Chat with Zen AI for personalized digital wellness tips
+- **💡 Daily tips**: Get daily tips for healthier tech habits
+- **📚 Digital skills library**: Browse categorized tips for focus, sleep, mindfulness, etc.
 
-## 🛠️ Tech Stack
+## 🛠️ Tech stack
 
 ### Frontend
 - **React Native** 0.81.1
@@ -24,8 +24,8 @@ AI-powered mobile app helping users manage smartphone usage. Features usage trac
 - **Google Gemini AI** - Natural language processing
 - **Uvicorn** - ASGI server
 
-### Android Native
-- **Kotlin** - Native Android modules
+### Android native
+- **Kotlin** - Native android modules
 - **UsageStatsManager** - Phone usage tracking
 - **NotificationManager** - Smart notifications
 
@@ -46,7 +46,7 @@ git clone https://github.com/cloudysman/zenapp-react-native.git
 cd zenapp-react-native
 ```
 
-### 2. Backend Setup
+### 2. Backend setup
 ```bash
 # Navigate to backend folder
 cd backend
@@ -58,19 +58,19 @@ pip install -r requirements.txt
 # Replace GEMINI_API_KEY with your key from https://makersuite.google.com/app/apikey
 ```
 
-### 3. Frontend Setup
+### 3. Frontend setup
 ```bash
 # Navigate to ZenApp folder
 cd ../ZenApp
 
-# Install Node dependencies
+# Install node dependencies
 npm install
 
 # For iOS (Mac only)
 cd ios && pod install && cd ..
 ```
 
-### 4. Environment Configuration
+### 4. Environment configuration
 
 #### Update API endpoints in `ChatScreen.js`:
 ```javascript
@@ -78,22 +78,22 @@ const API_BASE_URL = 'http://YOUR_IP_ADDRESS:8000';
 // Replace with your local IP (e.g., 192.168.1.100)
 ```
 
-## 🏃‍♂️ Running the App
+## 🏃‍♂️ Running app
 
-### 1. Start Backend Server
+### 1. Start backend server
 ```bash
 cd backend
 python main.py
 # Server runs at http://localhost:8000
 ```
 
-### 2. Start React Native Metro
+### 2. Start React Native metro
 ```bash
 cd ZenApp
 npx react-native start
 ```
 
-### 3. Run on Android
+### 3. Run on android
 ```bash
 # New terminal
 npx react-native run-android
@@ -104,15 +104,15 @@ npx react-native run-android
 npx react-native run-ios
 ```
 
-## 📱 Android Permissions Setup
+## 📱 Android permissions setup
 
-The app requires special permissions on Android:
+The app requires special permissions on android:
 
-1. **Usage Access Permission**
+1. **Usage access permission**
    - Go to Settings → Apps → Special access → Usage access
    - Enable for ZenApp
 
-2. **Notification Permission** (Android 13+)
+2. **Notification permission** (Android 13+)
    - The app will request this automatically
 
 ## 🔧 Troubleshooting
@@ -138,14 +138,14 @@ npx react-native run-android
 - Check firewall settings
 
 **4. Usage stats not showing**
-- Grant Usage Access permission in Android settings
+- Grant usage access permission in Android settings
 - Restart the app after granting permission
 
 **5. Python backend not starting**
 - Check if port 8000 is already in use
 - Verify Gemini API key is valid
 
-## 📁 Project Structure
+## 📁 Project structure
 
 ```
 zenapp-react-native/
@@ -167,18 +167,6 @@ zenapp-react-native/
 └── README.md
 ```
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is open source and available under the MIT License.
-
 ## 👨‍💻 Author
 
 **cloudysman**
@@ -192,22 +180,22 @@ This project is open source and available under the MIT License.
 
 ---
 
-## 🇻🇳 Hướng dẫn Tiếng Việt
+## 🇻🇳 Hướng dẫn tiếng Việt
 
 ### Yêu cầu hệ thống
 - Cài đặt Node.js, Python, Android Studio
-- Thiết bị Android hoặc máy ảo
+- Thiết bị android hoặc máy ảo
 
 ### Cài đặt nhanh
 1. Clone project về máy
 2. Cài dependencies: `npm install` (frontend) và `pip install -r requirements.txt` (backend)
-3. Sửa IP trong `ChatScreen.js` thành IP máy bạn
+3. Sửa IP trong `ChatScreen.js` thành IP ở trong phần ipconfig
 4. Chạy backend: `python main.py`
 5. Chạy app: `npx react-native run-android`
 
 ### Lưu ý quan trọng
-- Cấp quyền Usage Access cho app trong Settings Android
+- Cấp quyền Usage access cho app trong Settings Android
 - Backend phải chạy trước khi mở app
 - Dùng IP máy tính, không dùng localhost/127.0.0.1
 
-Nếu gặp lỗi, vui lòng tạo issue trên GitHub!
+
