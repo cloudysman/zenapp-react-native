@@ -78,7 +78,7 @@ const MessageItem = ({ message }) => {
   );
 };
 
-const ChatScreen = () => {
+const ChatScreen = ({ onBack }) => {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -101,7 +101,7 @@ const ChatScreen = () => {
   const buttonScale = useRef(new Animated.Value(1)).current;
   const typingIndicatorAnim = useRef(new Animated.Value(0)).current;
 
-  const API_BASE_URL = 'http://10.24.194.184:8000';
+  const API_BASE_URL = 'http://192.168.137.1:8000';
 
   useEffect(() => {
     // Welcome animation
@@ -122,7 +122,7 @@ const ChatScreen = () => {
     // Welcome message
     const welcomeMessage = {
       id: Date.now(),
-      text: 'Xin chào! 👋 Mình là Zen, trợ lý AI giúp bạn cân bằng cuộc sống số.\n\nBạn có thể chia sẻ với mình về thói quen sử dụng điện thoại hoặc hỏi mẹo để sử dụng công nghệ lành mạnh hơn nhé! 🌟',
+      text: 'Xin chào! 👋 Mình là Doggy, trợ lý AI giúp bạn cân bằng cuộc sống số.\n\nBạn có thể chia sẻ với mình về thói quen sử dụng điện thoại hoặc hỏi mẹo để sử dụng công nghệ lành mạnh hơn nhé! 🌟',
       isBot: true,
       timestamp: new Date().toLocaleTimeString('vi-VN', {
         hour: '2-digit',
@@ -440,12 +440,23 @@ const ChatScreen = () => {
         >
           <View style={styles.headerTop}>
             <View style={styles.headerLeft}>
-              <Text style={styles.headerTitle}>Zen AI</Text>
-              <Text style={styles.headerSubtitle}>
-                {dailyGoal
-                  ? `Mục tiêu: ${dailyGoal.hours}h ${dailyGoal.minutes}p`
-                  : 'Trợ lý sống số thông minh'}
-              </Text>
+              {onBack && (
+                <TouchableOpacity
+                  style={styles.backButton}
+                  onPress={onBack}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.backButtonText}>←</Text>
+                </TouchableOpacity>
+              )}
+              <View style={styles.headerTextContainer}>
+                <Text style={styles.headerTitle}>Zen AI</Text>
+                <Text style={styles.headerSubtitle}>
+                  {dailyGoal
+                    ? `Mục tiêu: ${dailyGoal.hours}h ${dailyGoal.minutes}p`
+                    : 'Trợ lý sống số thông minh'}
+                </Text>
+              </View>
             </View>
 
             <View style={styles.headerButtons}>
@@ -632,6 +643,26 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   headerLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    backdropFilter: 'blur(10px)',
+  },
+  backButtonText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  headerTextContainer: {
     flex: 1,
   },
   headerTitle: {

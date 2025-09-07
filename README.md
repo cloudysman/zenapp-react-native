@@ -61,7 +61,7 @@ pip install -r requirements.txt
 ### 3. Frontend setup
 ```bash
 # Navigate to ZenApp folder
-cd ../ZenApp
+cd ../ZenAppcd
 
 # Install node dependencies
 npm install

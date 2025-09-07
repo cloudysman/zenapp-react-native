@@ -6,7 +6,7 @@ import google.generativeai as genai
 import uvicorn
 
 # Cấu hình Gemini API
-GEMINI_API_KEY = "AIzaSyD9bDeOvWtyDD7G4qJdCYtB60dlrx2mHqg"
+GEMINI_API_KEY = "AIzaSyDBPxeJNTjC370xEbLFaLhSpkmnp7GLy3o"
 genai.configure(api_key=GEMINI_API_KEY)
 
 app = FastAPI(title="Digital Wellness Chatbot API")
