@@ -1,4 +1,10 @@
 import React, { useRef, useEffect, useState } from 'react';
+// import { MaterialIcons, Ionicons, SimpleLineIcons } from '@expo/vector-icons';
+
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
+
 import {
   View,
   Text,
@@ -226,23 +232,21 @@ const Home = ({ navigation, onGoalUpdate }) => {
     return '#4A5568';
   };
 
-  const MenuButton = ({ icon, title, subtitle, onPress, buttonScale, gradientColors }) => (
+  const MenuItem = ({ icon, title, onPress, buttonScale }) => (
     <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
       <TouchableOpacity
-        style={styles.menuButton}
+        style={styles.menuItem}
         onPress={onPress}
         activeOpacity={0.8}
       >
-        <LinearGradient
-          colors={gradientColors}
-          start={{x: 0, y: 0}}
-          end={{x: 1, y: 1}}
-          style={styles.menuButtonGradient}
-        >
-          <Text style={styles.menuButtonIcon}>{icon}</Text>
-          <Text style={styles.menuButtonTitle}>{title}</Text>
-          <Text style={styles.menuButtonSubtitle}>{subtitle}</Text>
-        </LinearGradient>
+        <View style={styles.iconBox}>
+          {typeof icon === 'string' ? (
+            <Text style={styles.iconBoxText}>{icon}</Text>
+          ) : (
+            icon
+          )}
+        </View>
+        <Text style={styles.featureTitle}>{title}</Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -267,20 +271,7 @@ const Home = ({ navigation, onGoalUpdate }) => {
           <Text style={styles.headerTitle}>ZenApp</Text>
           <Text style={styles.headerSubtitle}>Trợ lý sống số thông minh</Text>
           
-          {/* Usage Stats Bar */}
-          <View style={[styles.statsBar, { backgroundColor: getUsageStatusColor() + '20' }]}>
-            <View style={styles.statsBarLeft}>
-              <Text style={styles.statsLabel}>Hôm nay</Text>
-              <Text style={[styles.statsValue, { color: getUsageStatusColor() }]}>
-                {todayUsage ? `${todayUsage.hours}h ${todayUsage.minutes}p` : '--:--'}
-              </Text>
-            </View>
-            <View style={[styles.statsPercentage, { backgroundColor: getUsageStatusColor() }]}>
-              <Text style={styles.statsPercentageText}>
-                {getUsageStatusText()}
-              </Text>
-            </View>
-          </View>
+
 
           {/* Remaining Time Bar */}
           {dailyGoal && (
@@ -331,41 +322,33 @@ const Home = ({ navigation, onGoalUpdate }) => {
         <View style={styles.menuGrid}>
           {/* Row 1 */}
           <View style={styles.menuRow}>
-            <MenuButton
-              icon="🤖"
+            <MenuItem
+              icon={<MaterialIcons name="smart-toy" size={26} color="#991B1B" />}
               title="Chat Bot"
-              subtitle="Trò chuyện với Zen AI"
               onPress={() => handleNavigation('chatbot', button1Scale)}
               buttonScale={button1Scale}
-              gradientColors={['#667eea', '#764ba2']}
             />
-            <MenuButton
-              icon="📚"
+            <MenuItem
+              icon={<Ionicons name="book-outline" size={26} color="#991B1B" />}
               title="Thư viện"
-              subtitle="Kỹ năng sống số"
               onPress={() => handleNavigation('library', button2Scale)}
               buttonScale={button2Scale}
-              gradientColors={['#f093fb', '#f5576c']}
             />
           </View>
 
           {/* Row 2 */}
           <View style={styles.menuRow}>
-            <MenuButton
-              icon="⚙️"
+            <MenuItem
+              icon={<Ionicons name="settings-outline" size={26} color="#991B1B" />}
               title="Cài đặt"
-              subtitle="Mục tiêu & Thông báo"
               onPress={() => handleNavigation('goals', button3Scale)}
               buttonScale={button3Scale}
-              gradientColors={['#4facfe', '#00f2fe']}
             />
-            <MenuButton
-              icon="🎮"
+            <MenuItem
+              icon={<SimpleLineIcons name="game-controller" size={26} color="#991B1B" />}
               title="Game"
-              subtitle="Sắp ra mắt"
               onPress={() => handleNavigation('game', button4Scale)}
               buttonScale={button4Scale}
-              gradientColors={['#43e97b', '#38f9d7']}
             />
           </View>
         </View>
@@ -506,6 +489,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
+    marginBottom: 100
   },
   sectionTitle: {
     fontSize: 24,
@@ -523,42 +507,43 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 20,
   },
-  menuButton: {
+  menuItem: {
     width: (width - 60) / 2,
-    height: 140,
-    borderRadius: 20,
+    height: 120,
+    borderRadius: 16,
+    backgroundColor: 'white',
+    padding: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 2,
     },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  menuButtonGradient: {
-    flex: 1,
-    borderRadius: 20,
-    padding: 20,
-    justifyContent: 'center',
+  iconBox: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: '#FEE2E2',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
   },
-  menuButtonIcon: {
-    fontSize: 32,
-    marginBottom: 8,
+  iconBoxText: {
+    fontSize: 26,
   },
-  menuButtonTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  menuButtonSubtitle: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.8)',
-    textAlign: 'center',
-    lineHeight: 16,
+  featureTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#991B1B',
   },
   tipsSection: {
     marginTop: 20,

@@ -122,7 +122,7 @@ const ChatScreen = ({ onBack }) => {
     // Welcome message
     const welcomeMessage = {
       id: Date.now(),
-      text: 'Xin chào! 👋 Mình là Doggy, trợ lý AI giúp bạn cân bằng cuộc sống số.\n\nBạn có thể chia sẻ với mình về thói quen sử dụng điện thoại hoặc hỏi mẹo để sử dụng công nghệ lành mạnh hơn nhé! 🌟',
+      text: 'Xin chào! 👋 Mình là Zen, trợ lý AI giúp bạn cân bằng cuộc sống số.\n\nBạn có thể chia sẻ với mình về thói quen sử dụng điện thoại hoặc hỏi mẹo để sử dụng công nghệ lành mạnh hơn nhé! 🌟',
       isBot: true,
       timestamp: new Date().toLocaleTimeString('vi-VN', {
         hour: '2-digit',
@@ -459,40 +459,7 @@ const ChatScreen = ({ onBack }) => {
               </View>
             </View>
 
-            <View style={styles.headerButtons}>
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => {
-                  animateButtonPress();
-                  setShowDigitalSkills(true);
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.iconButtonText}>💡</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => {
-                  animateButtonPress();
-                  setShowSmartInterventions(true);
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.iconButtonText}>🤖</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => {
-                  animateButtonPress();
-                  setShowGoalSettings(true);
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.iconButtonText}>⚙️</Text>
-              </TouchableOpacity>
-            </View>
+            
           </View>
 
           <TouchableOpacity

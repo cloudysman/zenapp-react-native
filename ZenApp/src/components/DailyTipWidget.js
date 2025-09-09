@@ -395,8 +395,8 @@ const styles = StyleSheet.create({
   },
   minimizedContainer: {
     position: 'absolute',
-    bottom: 80,
-    right: 20,
+    bottom: 115,
+    right: 15,
     zIndex: 1000,
   },
   minimizedGradient: {
