@@ -9,10 +9,12 @@ import {
   Animated,
   Dimensions,
   TextInput,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
 import { digitalSkillsContent } from './DigitalSkillsContent';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const { width, height } = Dimensions.get('window');
 const DAILY_TIP_KEY = '@zen_app_daily_tip';
@@ -313,14 +315,17 @@ const DigitalSkillsViewer = ({ visible, onClose }) => {
           end={{x: 1, y: 1}}
         >
           <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>💡 Kỹ năng sống số</Text>
             <TouchableOpacity
-              onPress={onClose}
-              style={styles.closeButton}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.closeButtonText}>✕</Text>
-            </TouchableOpacity>
+                  style={styles.closeButton}
+                  onPress={onClose}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="chevron-back" size={26} color="white" />
+                </TouchableOpacity>
+
+            
+            <Text style={styles.headerTitle}>💡 Kỹ năng sống số</Text>
+            
           </View>
 
           {/* Search Bar */}
@@ -508,28 +513,25 @@ const styles = StyleSheet.create({
   },
   headerContent: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: 'white',
+    marginLeft: 0,
   },
   closeButton: {
+    marginLeft: -10,
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    // backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  closeButtonText: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
+  
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',

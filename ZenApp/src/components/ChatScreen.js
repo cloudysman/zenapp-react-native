@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import UsageStats from './UsageStats';
 import GoalSettings from './GoalSettings';
 import SmartInterventions from './SmartInterventions';
@@ -446,7 +447,7 @@ const ChatScreen = ({ onBack }) => {
                   onPress={onBack}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.backButtonText}>←</Text>
+                  <Ionicons name="chevron-back" size={26} color="white" />
                 </TouchableOpacity>
               )}
               <View style={styles.headerTextContainer}>
@@ -615,7 +616,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backButton: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    // backgroundColor: 'rgba(255,255,255,0.25)',
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -623,6 +624,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
     backdropFilter: 'blur(10px)',
+    marginLeft: -16
   },
   backButtonText: {
     color: 'white',

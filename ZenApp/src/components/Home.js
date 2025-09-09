@@ -117,20 +117,28 @@ const Home = ({ navigation, onGoalUpdate }) => {
         const usage = JSON.parse(usageData);
         setTodayUsage(usage);
         updateRemainingTime(usage);
+      } else {
+        const defaultUsage = { hours: 0, minutes: 0, totalMinutes: 0 };
+        setTodayUsage(defaultUsage);
+        updateRemainingTime(defaultUsage);
       }
     } catch (error) {
       console.error('Error loading usage:', error);
+      const fallbackUsage = { hours: 0, minutes: 0, totalMinutes: 0 };
+      setTodayUsage(fallbackUsage);
+      updateRemainingTime(fallbackUsage);
     }
   };
 
   const updateRemainingTime = (usage = todayUsage) => {
-    if (!dailyGoal || !usage) {
+    if (!dailyGoal) {
       setRemainingTime(null);
       setGoalProgress(0);
       return;
     }
 
-    const usedMinutes = usage.totalMinutes;
+    const safeUsage = usage || { hours: 0, minutes: 0, totalMinutes: 0 };
+    const usedMinutes = safeUsage.totalMinutes || 0;
     const goalMinutes = dailyGoal.totalMinutes;
     const remainingMinutes = Math.max(0, goalMinutes - usedMinutes);
     
@@ -220,7 +228,7 @@ const Home = ({ navigation, onGoalUpdate }) => {
       return 'Đã đạt mục tiêu!';
     }
     
-    return `Còn lại ${remainingTime.hours}h ${remainingTime.minutes}p`;
+    return `${remainingTime.hours}h ${remainingTime.minutes}p`;
   };
 
   const getRemainingTimeColor = () => {
@@ -277,14 +285,12 @@ const Home = ({ navigation, onGoalUpdate }) => {
           {dailyGoal && (
             <View style={styles.remainingTimeBar}>
               <View style={styles.remainingTimeLeft}>
-                <Text style={styles.remainingTimeLabel}>Thời gian còn lại</Text>
-                <Text style={[styles.remainingTimeValue, { color: getRemainingTimeColor() }]}>
-                  {getRemainingTimeText()}
-                </Text>
+                <Text style={styles.remainingTimeLabel}>Mục tiêu: {getRemainingTimeText()}</Text>
+                
               </View>
               
               {/* Progress Bar */}
-              <View style={styles.progressBarContainer}>
+              {/* <View style={styles.progressBarContainer}>
                 <View style={styles.progressBarBackground}>
                   <View 
                     style={[
@@ -299,7 +305,7 @@ const Home = ({ navigation, onGoalUpdate }) => {
                 <Text style={styles.progressBarText}>
                   {Math.round(goalProgress)}%
                 </Text>
-              </View>
+              </View> */}
             </View>
           )}
         </Animated.View>
@@ -453,7 +459,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   remainingTimeLabel: {
-    fontSize: 12,
+    fontSize: 15,
     color: 'rgba(255,255,255,0.8)',
     fontWeight: '500',
   },
