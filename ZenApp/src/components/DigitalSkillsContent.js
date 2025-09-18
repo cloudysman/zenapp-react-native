@@ -338,6 +338,24 @@ export const digitalSkillsContent = {
 
     return tips.length > 0 ? tips[Math.floor(Math.random() * tips.length)] : null;
   },
+  getLiteracyTriggers(message) {
+    const triggers = {
+      'tin giả': 'fakeNews',
+      'fake news': 'fakeNews',
+      'bắt nạt': 'cyberbullying',
+      'bully': 'cyberbullying',
+      'bản sắc số': 'digitalIdentity',
+      'privacy': 'digitalIdentity',
+    };
+
+    const lower = message.toLowerCase();
+    for (const [keyword, module] of Object.entries(triggers)) {
+      if (lower.includes(keyword)) {
+        return module;
+      }
+    }
+    return null;
+  },
 };
 
 export default digitalSkillsContent;

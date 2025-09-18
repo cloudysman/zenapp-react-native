@@ -24,6 +24,10 @@ import SmartInterventions from './SmartInterventions';
 import DigitalSkillsViewer from './DigitalSkillsViewer';
 import DailyTipWidget from './DailyTipWidget';
 import { digitalSkillsContent } from './DigitalSkillsContent';
+import DigitalLiteracyHub from './DigitalLiteracyHub';
+import FakeNewsDetector from './FakeNewsDetector';
+import CyberbullyingDefense from './CyberbullyingDefense';
+import DigitalIdentity from './DigitalIdentity';
 
 const { UsageStatsModule } = NativeModules;
 const { width, height } = Dimensions.get('window');
@@ -88,6 +92,12 @@ const ChatScreen = () => {
   const [showDigitalSkills, setShowDigitalSkills] = useState(false);
   const [todayUsage, setTodayUsage] = useState(null);
   const [dailyGoal, setDailyGoal] = useState(null);
+  const [showLiteracyHub, setShowLiteracyHub] = useState(false);
+  const [activeModule, setActiveModule] = useState(null);
+  const [literacyProgress, setLiteracyProgress] = useState({
+    totalPoints: 0,
+    modulesCompleted: 0,
+  });
   const [lastNotificationTime, setLastNotificationTime] = useState({
     warning80: null,
     warning90: null,
@@ -101,7 +111,7 @@ const ChatScreen = () => {
   const buttonScale = useRef(new Animated.Value(1)).current;
   const typingIndicatorAnim = useRef(new Animated.Value(0)).current;
 
-  const API_BASE_URL = 'http://10.24.194.184:8000';
+  const API_BASE_URL = 'http://10.200.175.184:8000';
 
   useEffect(() => {
     // Welcome animation
@@ -116,7 +126,7 @@ const ChatScreen = () => {
         tension: 50,
         friction: 8,
         useNativeDriver: true,
-      }),
+      })
     ]).start();
 
     // Welcome message
@@ -244,6 +254,52 @@ const ChatScreen = () => {
     }
   };
 
+  const handleLiteracyProgress = async (module, progress) => {
+    // Update literacy progress
+    setLiteracyProgress(prev => ({
+      totalPoints: prev.totalPoints + progress.score,
+      modulesCompleted: prev.modulesCompleted + (progress.completed ? 1 : 0),
+    }));
+
+    // Bonus giảm thời gian sử dụng khi hoàn thành module
+    if (progress.completed && dailyGoal) {
+      const bonusMinutes = 15; // Giảm 15 phút mục tiêu
+      const newGoal = {
+        ...dailyGoal,
+        totalMinutes: Math.max(0, dailyGoal.totalMinutes - bonusMinutes)
+      };
+      setDailyGoal(newGoal);
+
+      const bonusMessage = {
+        id: Date.now(),
+        text: `🎉 Tuyệt vời! Bạn đã hoàn thành module ${module}! Mục tiêu hôm nay được giảm 15 phút như phần thưởng!`,
+        isBot: true,
+        timestamp: new Date().toLocaleTimeString('vi-VN', {
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+      };
+      setMessages(prev => [...prev, bonusMessage]);
+    }
+
+    // Save to backend
+    try {
+      await fetch(`${API_BASE_URL}/api/literacy/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: 'anonymous',
+          module,
+          score: progress.score,
+          completed_items: progress.completed || [],
+          skills: progress.skills || {},
+        }),
+      });
+    } catch (error) {
+      console.error('Error syncing progress:', error);
+    }
+  };
+
   const getUsageStatusColor = () => {
     if (!todayUsage || !dailyGoal) return '#E53E3E';
 
@@ -297,6 +353,26 @@ const ChatScreen = () => {
     const currentInput = inputText.trim();
     setInputText('');
     setIsLoading(true);
+
+    // Check for literacy module triggers
+    const literacyModule = digitalSkillsContent.getLiteracyTriggers?.(currentInput);
+    if (literacyModule) {
+      setTimeout(() => {
+        const suggestMessage = {
+          id: Date.now() + 3,
+          text: `🎮 Bạn có muốn thử module "${literacyModule === 'fakeNews' ? 'Thám Tử Tin Giả' :
+                 literacyModule === 'cyberbullying' ? 'Chống Bắt Nạt Mạng' :
+                 'Bản Sắc Số'}" không? Chơi game để học kỹ năng số!`,
+          isBot: true,
+          timestamp: new Date().toLocaleTimeString('vi-VN', {
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+        };
+        setMessages(prev => [...prev, suggestMessage]);
+        setActiveModule(literacyModule);
+      }, 2000);
+    }
 
     // Start typing animation
     Animated.loop(
@@ -453,6 +529,17 @@ const ChatScreen = () => {
                 style={styles.iconButton}
                 onPress={() => {
                   animateButtonPress();
+                  setShowLiteracyHub(true);
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.iconButtonText}>🎮</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => {
+                  animateButtonPress();
                   setShowDigitalSkills(true);
                 }}
                 activeOpacity={0.7}
@@ -501,6 +588,12 @@ const ChatScreen = () => {
             <View style={[styles.statsPercentage, { backgroundColor: getUsageStatusColor() }]}>
               <Text style={styles.statsPercentageText}>{getUsageStatusText()}</Text>
             </View>
+            {literacyProgress.totalPoints > 0 && (
+              <View style={styles.literacyStats}>
+                <Text style={styles.literacyIcon}>🎮</Text>
+                <Text style={styles.literacyPoints}>{literacyProgress.totalPoints}xp</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </Animated.View>
       </LinearGradient>
@@ -529,16 +622,44 @@ const ChatScreen = () => {
         onClose={() => setShowDigitalSkills(false)}
       />
 
+      <DigitalLiteracyHub
+        visible={showLiteracyHub}
+        onClose={() => setShowLiteracyHub(false)}
+        onModuleSelect={(module) => {
+          setActiveModule(module);
+          setShowLiteracyHub(false);
+        }}
+      />
+
+      <FakeNewsDetector
+        visible={activeModule === 'fakeNews'}
+        onClose={() => setActiveModule(null)}
+        onUpdateProgress={handleLiteracyProgress}
+      />
+
+      <CyberbullyingDefense
+        visible={activeModule === 'cyberbullying'}
+        onClose={() => setActiveModule(null)}
+        onUpdateProgress={handleLiteracyProgress}
+      />
+
+      <DigitalIdentity
+        visible={activeModule === 'digitalIdentity'}
+        onClose={() => setActiveModule(null)}
+        onUpdateProgress={handleLiteracyProgress}
+      />
+
       <KeyboardAvoidingView
         style={styles.chatContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined} // Chỉ dùng 'padding' cho iOS
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0} // Thêm offset cho header
       >
         <ScrollView
           ref={scrollViewRef}
           style={styles.messagesContainer}
           showsVerticalScrollIndicator={false}
           onContentSizeChange={scrollToBottom}
-          contentContainerStyle={styles.messagesContent}
+          contentContainerStyle={[styles.messagesContent, { paddingBottom: 100 }]} // Thêm padding dưới
         >
           {messages.map(message => (
             <MessageItem key={message.id} message={message} />
@@ -696,6 +817,23 @@ const styles = StyleSheet.create({
   statsPercentageText: {
     color: 'white',
     fontSize: 14,
+    fontWeight: 'bold',
+  },
+  literacyStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  literacyIcon: {
+    fontSize: 14,
+    marginRight: 4,
+  },
+  literacyPoints: {
+    fontSize: 13,
+    color: 'white',
     fontWeight: 'bold',
   },
   chatContainer: {

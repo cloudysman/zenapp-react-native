@@ -4,13 +4,15 @@ from pydantic import BaseModel
 from typing import List, Optional
 import google.generativeai as genai
 import uvicorn
-
+# from fraud_detection_rag import FraudDetectionRAG
+from digital_literacy import router as literacy_router
 # Cấu hình Gemini API
 GEMINI_API_KEY = "AIzaSyD9bDeOvWtyDD7G4qJdCYtB60dlrx2mHqg"
 genai.configure(api_key=GEMINI_API_KEY)
-
+# fraud_rag = FraudDetectionRAG()
 app = FastAPI(title="Digital Wellness Chatbot API")
-
+# Thêm router
+app.include_router(literacy_router)
 # Cấu hình CORS cho React Native
 app.add_middleware(
     CORSMiddleware,
@@ -78,7 +80,13 @@ Hãy trả lời một cách tự nhiên và hữu ích!
 @app.get("/")
 async def root():
     return {"message": "Digital Wellness Chatbot API is running!"}
-
+# @app.post("/fraud-detection")
+# async def check_fraud(request: ChatMessage):
+#     try:
+#         answer = fraud_rag.query(request.message)
+#         return {"response": answer, "status": "success"}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 @app.post("/chat", response_model=ChatResponse)
 async def chat_with_bot(chat_request: ChatMessage):
     try:
@@ -168,6 +176,8 @@ async def get_daily_tip():
     daily_tip = random.choice(tips)
     
     return {"tip": daily_tip, "date": str(today)}
-
+@app.get("/api/literacy/health")
+async def literacy_health():
+    return {"status": "healthy", "module": "Digital Literacy System"}
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
